@@ -72,5 +72,5 @@ Build a github repository to store your homework assignments.  Share the link in
 
 *STUDENT INPUT*
 
-Link: https://github.com/Licza/STOR390/tree/main
+Link: https://github.com/Licza/STOR390/tree/Homework-2
 
