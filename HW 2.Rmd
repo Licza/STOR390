@@ -1,0 +1,76 @@
+---
+title: "HW 2 Student"
+author: "Andy Ackerman"
+date: "10/17/2023"
+output: 
+  html_document:
+    number_sections: true
+---
+
+This homework is meant to illustrate the methods of classification algorithms as well as their potential pitfalls.  In class, we demonstrated K-Nearest-Neighbors using the `iris` dataset.  Today I will give you a different subset of this same data, and you will train a KNN classifier.  
+
+```{r}
+set.seed(123)
+library(class)
+
+df <- data(iris) 
+
+normal <-function(x) {
+  (x -min(x))/(max(x)-min(x))   
+}
+
+iris_norm <- as.data.frame(lapply(iris[,c(1,2,3,4)], normal))
+
+subset <- c(1:45, 58, 60:70, 82, 94, 110:150)
+iris_train <- iris_norm[subset,] 
+iris_test <- iris_norm[-subset,] 
+
+iris_target_category <- iris[subset,5]
+iris_test_category <- iris[-subset,5]
+
+
+```
+
+#
+Above, I have given you a training-testing partition.  Train the KNN with $K = 5$ on the training data and use this to classify the 50 test observations.  Once you have classified the test observations, create a contingency table -- like we did in class -- to evaluate which observations your algorithm is misclassifying.   
+
+```{r}
+set.seed(123)
+#STUDENT INPUT
+pr <- knn(iris_train, iris_test, cl = iris_target_category, k=5)
+tab <- table(pr, iris_test_category)
+tab
+
+```
+
+#
+
+Discuss your results.  If you have done this correctly, you should have a classification error rate that is roughly 20% higher than what we observed in class.  Why is this the case? In particular run a summary of the `iris_test_category` as well as `iris_target_category` and discuss how this plays a role in your answer.  
+
+```{r}
+summary(iris_target_category)
+summary(iris_test_category)
+summary(iris)
+```
+
+
+*STUDENT INPUT* 
+
+The contingency tables show that the training data set has a low number of Versicolor species compared to Setosa and Virginica. In contrast, the test data set contains a high number of Versicolor compared to Setosa and Virginica. The entire data set has a perfectly balanced distribution of the three species. Therefore, the training data set fails to be a good representation of the test set and the entire set, leading to a higher misclassification rate of 0.22. In particular, the model is misclassifying Virginica species as Versicolor.
+
+#
+
+Choice of $K$ can also influence this classifier.  Why would choosing $K = 6$ not be advisable for this data? 
+
+*STUDENT INPUT*
+
+Choosing 6 as our value of K is not advisable for this data because it is divisible by the number of classes. More specifically, the value of 6 is divisible by 3, the number of class species. Choosing such a value can result in a tie among the 6 nearest labels, which could lead to a suboptimal model.
+
+#
+
+Build a github repository to store your homework assignments.  Share the link in this file.  
+
+*STUDENT INPUT*
+
+Link: https://github.com/Licza/STOR390/tree/main
+
