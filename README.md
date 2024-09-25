@@ -6,5 +6,5 @@ R for computation:
 For Windows: [https://cran.r-project.org/bin/windows/base/]
 For Mac: [https://cran.r-project.org/bin/macosx/]
 
-#Branches
+## Branches
 Each Branch will correspond to a different Homeowork Assignment.
