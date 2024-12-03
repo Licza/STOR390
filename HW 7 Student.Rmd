@@ -1,0 +1,86 @@
+---
+title: "Hw 7"
+author: "Licza Lobo"
+date: "12/2/2024"
+output:
+  pdf_document: default
+  html_document:
+    number_sections: true
+---
+
+# 
+Recall that in class we showed that for randomized response differential privacy based on a fair coin (that is a coin that lands heads up with probability $0.5$), the estimated proportion of incriminating observations $\hat{P}$ ^[in class this was the estimated proportion of students having actually cheated] was given by $\hat{P} = 2\hat{\pi}-\frac{1}{2}$ where $\hat{\pi}$ is the proportion of people answering affirmative to the incriminating question.  
+
+I want you to generalize this result for a potentially biased coin.  That is, for a differentially private mechanism that uses a coin landing heads up with probability $0 \leq \theta \leq 1$, find an estimate $\hat{P}$ for the proportion of incriminating observations.  This expression should be in terms of $\theta$ and $\hat{\pi}$.  
+
+Note the proportion of people answering affirmative to the incriminating question, $\hat{\pi}$, is equal to the sum of the proportion required to yes and the proportion who say yes because it is the ground truth. The proportion of those required to say yes is equal to the probability of getting a heads and tails, $\theta(1-\theta)$. The proportion of those who respond with the truth is equal to the probability of getting heads times the proportion of true incriminating observations, $\theta(\hat{P})$. So, $\hat{\pi} = \theta(1-\theta) + \theta(\hat{P})$. Thus, $\hat{P} = \frac{\hat{\pi}}{\theta} - (1-\theta)$
+
+#
+Next, show that this expression reduces to our result from class in the special case where $\theta = \frac{1}{2}$.
+
+When $\theta = \frac{1}{2}$, $\hat{P} = \frac{\hat{\pi}}{\theta} - (1-\theta) = \frac{\hat{\pi}}{\frac{1}{2}} - (1-\frac{1}{2}) = 2\hat{\pi} - \frac{1}{2}$. This is equal to our result from class.
+
+#
+Part of having an explainable model is being able to implement the algorithm from scratch.  Let's try and do this with `KNN`.  Write a function entitled `chebychev` that takes in two vectors and outputs the Chebychev or $L^\infty$ distance between said vectors.  I will test your function on two vectors below.  Then, write a `nearest_neighbors` function that finds the user specified $k$ nearest neighbors according to a user specified distance function (in this case $L^\infty$) to a user specified data point observation.  
+
+```{r, eval = FALSE}
+cheby <- function(a,b){
+  max(abs(a-b))
+}
+nearest_neighbors = function(x, obs, k, dist_fn){
+  dist = apply(x, 1, dist_fn, obs) 
+  distances = sort(dist)[1:k]
+  neighbors = which(dist %in% sort(dist)[1:k])
+  return(list(neighbors, distances))
+}
+
+
+x<- c(3,4,5)
+y<-c(7,10,1)
+cheby(x,y)
+
+```
+
+#
+Finally create a `knn_classifier` function that takes the nearest neighbors specified from the above functions and assigns a class label based on the mode class label within these nearest neighbors.  I will then test your functions by finding the five nearest neighbors to the very last observation in the `iris` dataset according to the `chebychev` distance and classifying this function accordingly.  
+
+```{r, eval = FALSE}
+library(class)
+df <- data(iris) 
+knn_classifier = function(x,y){
+  groups = table(x[,y])
+  return(groups[groups == max(groups)])
+}
+
+
+#data less last observation
+x = iris[1:(nrow(iris)-1),]
+#observation to be classified
+obs = iris[nrow(iris),]
+
+#find nearest neighbors
+ind = nearest_neighbors(x[,1:4], obs[,1:4],5, cheby)[[1]]
+as.matrix(x[ind,1:4])
+obs[,1:4]
+knn_classifier(x[ind,], 'Species')
+obs[,'Species']
+
+```
+
+# 
+Interpret this output.  Did you get the correct classification?  Also, if you specified $K=5$, why do you have $7$ observations included in the output dataframe?
+
+The KNN classifier predicted the label virginica for the given observation. This was based on the 5 observations in the x dataset with the closest distance (using chebychevs distance) to the given observation. This is the correct classification. However, although we specified K=5, we have 7 observations included in the output dataframe. This is because when selecting the indices that match the k smallest distances, the nearest_neighbor function selects all indices that match the sorted distances. In this case, 2 observations also had a distance equal to the 5 smallest ones, resulting in 5+2=7 observations in our output dataframe.
+
+
+#
+Earlier in this unit we learned about Google's DeepMind assisting in the management of acute kidney injury.  Assistance in the health care sector is always welcome, particularly if it benefits the well-being of the patient.  Even so, algorithmic assistance necessitates the acquisition and retention of sensitive health care data.  With this in mind, who should be privy to this sensitive information?  In particular, is data transfer allowed if the company managing the software is subsumed?  Should the data be made available to insurance companies who could use this to better calibrate their actuarial risk but also deny care?  Stake a position and defend it using principles discussed from the class.  
+
+No, sharing data beyond the DeepMind platform violates its users' data privacy. In the case where the company is being subsumed, users should be fully informed of how their data will be used, who it will be shared with, and the potential consequences of such data transfer. To ensure the user is being put first, it is also important that Google fully informs their users to make them aware, not simply get legal consent to avoid breaches. Google would most likely attempt to achieve this through an update in the terms and conditions. However, this is often not fully informed consent due to the way the terms and conditions are presented. Therefore, in order to allow a data transfer, Google would have to find a way to collecetd fully informed explicit consent. Otherwise, they violate their user's data privacy rights.
+In the case where data is made available to insurance companies, we can consider the harm principle. In this case, it is possible for users to be denied care based on the data collected. This results in potential harm to the user for Google’s gain in profits. The increase in profits from sharing data does not outweigh such harm, reinforcing the need to protect user data privacy and ensure fully informed consent among them. This includes letting them know of potential consequences, such as being denied insurance.
+In both cases, the data transfers benefit Google at the expense of its users, reducing users to mere means to an end. Expanding on this from a Deontological standpoint, we can further consider the categorical imperative. Universalizing the sharing of healthcare data with other companies can result in harm to users worldwide, leading to the spread of immense amounts of sensitive data that benefit larger companies at the expense of individual privacy. 
+
+#
+I have described our responsibility to proper interpretation as an *obligation* or *duty*.  How might a Kantian Deontologist defend such a claim?  
+
+As statisticians, we are tasked with the proper interpretation of methods. Because these methods are often difficult to fully understand, it is our responsibility to ensure that the right people understand our interpretations and how they may impact them. Kant would defend this claim with two main principles. Under the categorical imperative, we could not universalize misinterpreting statistical methods. If everyone were to misinterpret or present misleading interpretations, it would result in the public losing trust in statistics and statisticians. Additionally, it could lead to the widespread use of biased algorithms and models, potentially perpetuating harmful stereotypes. In this way, misinterpretation would violate the categorical imperative, resulting in harmful consequences. Second, misinterpretation treats those who use the models and algorithms as mere means to an end. A statistician who misinterprets or fails to present accurate information is failing in their duty, at the expense of others. By presenting a false or misleading interpretation, they treat others as tools for their own convenience, avoiding their responsibility to ensure proper understanding. This violates Kant’s principle of not treating other moral agents as a mere means.
